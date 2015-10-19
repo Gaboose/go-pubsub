@@ -1,17 +1,17 @@
 package topology
 
 type Ring struct {
-	me      int
-	sl      []int
-	peersN  int
-	compare func(int, int) int
+	me       int
+	peersN   int
+	distance func(int, int) int
+	sl       []int
 }
 
-func NewRing(me, peersN int, compare func(int, int) int) *Ring {
+func NewRing(me, peersN int, distance func(int, int) int) *Ring {
 	r := new(Ring)
 	r.me = me
 	r.peersN = peersN
-	r.compare = compare
+	r.distance = distance
 	return r
 }
 
@@ -23,41 +23,39 @@ func (r *Ring) AddPeer(p int) (int, bool) {
 		return i, true
 	}
 
-	if len(r.sl) < r.peersN {
-		// make room
-		r.sl = append(r.sl, 0)
+	// make room
+	r.sl = append(r.sl, 0)
 
-		// insert p at sl[i] and shift the right side by one
-		copy(r.sl[i+1:], r.sl[i:len(r.sl)-1])
-		r.sl[i] = p
+	// shift the right side by one and insert (i, p)
+	copy(r.sl[i+1:], r.sl[i:len(r.sl)-1])
+	r.sl[i] = p
+
+	if len(r.sl) <= r.peersN {
 		return 0, false
 	} else {
-		// closest peer to me according to compare method
+		// remove the furthest peer index-wise
 		j, _ := r.closest(r.me)
-		// furthest peer index-wise
-		j = (j + r.peersN/2) % r.peersN
-
-		// insert (i, p) and remove (j, rm)
-		rm := r.sl[j]
-		if i < j {
-			copy(r.sl[i+1:j+1], r.sl[i:j])
-			r.sl[i] = p
+		if j > r.peersN/2 {
+			rm := r.sl[0]
+			r.sl = r.sl[1:]
+			return rm, true
 		} else {
-			copy(r.sl[j:i], r.sl[j+1:i+1])
-			r.sl[i-1] = p
+			rm := r.sl[r.peersN]
+			r.sl = r.sl[:r.peersN]
+			return rm, true
 		}
-		return rm, true
 	}
 
 }
 
-//finds closest or closest+1 element's index
+// finds where trg would go in the sorted r.sl
 func (r *Ring) closest(trg int) (int, bool) {
+	trgpos := r.distance(trg, r.me)
 	for i, el := range r.sl {
-		cmp := r.compare(trg, el)
-		if cmp == 0 {
+		d := trgpos - r.distance(el, r.me)
+		if d == 0 {
 			return i, true
-		} else if cmp < 0 {
+		} else if d < 0 {
 			return i, false
 		}
 	}
