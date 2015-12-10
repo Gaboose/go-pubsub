@@ -179,6 +179,43 @@ func TestIncreaseAge(t *testing.T) {
 	}
 }
 
+func TestBirth(t *testing.T) {
+	sw := mock.ProtNetSwarm{}
+	c0 := New(&mock.Peer{ID: "p0"}, 3, 2, sw.DialListener("p0"))
+	c1 := New(&mock.Peer{ID: "p1"}, 3, 2, sw.DialListener("p1"))
+
+	c0.Start(0)
+	defer c0.Stop()
+	c1.Start(0)
+	defer c1.Stop()
+	c0.neighbs = PeerSet{
+		"p1": &mock.Peer{"p1", map[string]interface{}{age: 10}},
+		"p2": &mock.Peer{"p2", map[string]interface{}{age: 0}},
+	}
+	c1.neighbs = PeerSet{
+		"p0": &mock.Peer{"p0", map[string]interface{}{age: 10}},
+	}
+	c0.Shuffle()
+	c1.Shuffle()
+
+	c0.neighbs = PeerSet{
+		"p1": &mock.Peer{"p1", map[string]interface{}{age: 10}},
+		"p3": &mock.Peer{"p3", map[string]interface{}{age: 0}},
+	}
+	c0.Shuffle()
+
+	set := make(map[interface{}]int64)
+	for i := 0; i < 3; i++ {
+		p := <-c1.Out()
+		set[p.Id()] = p.Get(birth).(int64)
+	}
+
+	diff := set["p3"] - set["p2"]
+	if diff != 1 {
+		t.Fatalf("expected birth to be 1 apart, got %v", diff)
+	}
+}
+
 func equalSets(arr1, arr2 []interface{}) bool {
 	set1 := map[interface{}]bool{}
 	for _, s := range arr1 {

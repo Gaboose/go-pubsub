@@ -1,7 +1,15 @@
 package cyclon
 
+// Uniformly random peer sampling service.
+// "Cyclon" is implemented following this journal article:
+//
+// Voulgaris, S., Gavidia, D. & Van Steen, M., 2005.
+// CYCLON: Inexpensive membership management for unstructured P2P overlays.
+// Journal of Network and Systems Management, 13(2), p.197-216.
+
 import (
 	"errors"
+	//"fmt"
 	"net/rpc"
 	"sync"
 	"time"
@@ -9,18 +17,21 @@ import (
 	"github.com/Gaboose/go-pubsub-planet/topo"
 )
 
-// Name of a parameter of topo.Peer
+// Names of a topo.Peer parameters
 const age = "age"
+const birth = "birth"
 
 type Cyclon struct {
-	me        topo.Peer
-	cachesize int
-	shuflen   int
-	neighbs   PeerSet // our "neighbour set" or "cache"
-	neighbsmu sync.RWMutex
-	protnet   topo.ProtNet
-	out       chan topo.Peer
-	stop      chan bool
+	me         topo.Peer
+	cachesize  int
+	shuflen    int
+	neighbs    PeerSet // our "neighbour set" or "cache"
+	neighbsmu  sync.RWMutex
+	protnet    topo.ProtNet
+	serviceAge int64
+	out        chan topo.Peer
+	outBuf     chan topo.Peer
+	stop       chan bool
 }
 
 func New(me topo.Peer, cachesize, shuflen int, protnet topo.ProtNet) *Cyclon {
@@ -31,8 +42,6 @@ func New(me topo.Peer, cachesize, shuflen int, protnet topo.ProtNet) *Cyclon {
 		shuflen:   shuflen,
 		neighbs:   make(PeerSet),
 		protnet:   protnet,
-		out:       make(chan topo.Peer, cachesize),
-		stop:      nil,
 	}
 }
 
@@ -42,12 +51,18 @@ func (c *Cyclon) Start(interval time.Duration) {
 	}
 	c.stop = make(chan bool)
 
+	// Start RPC server
 	var stop [2]chan bool
 	stop[0] = CyclonRPC{c}.serve()
 
+	// Start periodic shuffling
 	if interval > 0 {
 		stop[1] = c.tick(interval)
 	}
+
+	// Start output buffer
+	c.outBuf, c.out = make(chan topo.Peer), make(chan topo.Peer)
+	go overflowBuffer(c.cachesize, c.outBuf, c.out)
 
 	go func() {
 		<-c.stop
@@ -57,6 +72,7 @@ func (c *Cyclon) Start(interval time.Duration) {
 		if stop[1] != nil {
 			close(stop[1])
 		}
+		close(c.outBuf)
 	}()
 }
 
@@ -107,10 +123,11 @@ func (c *Cyclon) Shuffle() {
 		return
 	}
 
-	// Increase the age of all neighbours by one
+	// Increase the age of all neighbours and our service
 	for _, p := range c.neighbs {
 		p.Put(age, p.Get(age).(int)+1)
 	}
+	c.serviceAge++
 
 	// Pop the neighbour that we're going to shuffle with
 	q := c.neighbs.PopOldest()
@@ -184,22 +201,11 @@ func (c Cyclon) updateCache(new, old []topo.Peer) {
 		}
 	}
 
-	// Send the new peers out our channel without blocking
-	for _, p := range new {
-		if cap(c.out) == 0 {
-			select {
-			case c.out <- p:
-			default:
-			}
-		} else {
-		RetryLoop:
-			for {
-				select {
-				case c.out <- p:
-					break RetryLoop
-				case <-c.out:
-				}
-			}
+	// Send the new peers out without blocking
+	if c.outBuf != nil {
+		for _, p := range new {
+			p.Put(birth, c.serviceAge-int64(p.Get(age).(int)))
+			c.outBuf <- p
 		}
 	}
 
