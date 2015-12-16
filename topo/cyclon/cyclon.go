@@ -17,9 +17,9 @@ import (
 	"github.com/Gaboose/go-pubsub-planet/topo"
 )
 
-// Names of a topo.Peer parameters
+// Names of topo.Peer parameters
 const age = "age"
-const birth = "birth"
+const bday = "bday"
 
 type Cyclon struct {
 	me         topo.Peer
@@ -109,9 +109,21 @@ func (c *Cyclon) Add(peers ...topo.Peer) {
 	c.neighbsmu.Unlock()
 }
 
-// Out Returns a channel of uniformly random peers in the Cyclon network.
+// Out channel constantly sends new peers from the Cyclon network
+// as they're discovered.
 func (c *Cyclon) Out() <-chan topo.Peer {
 	return c.out
+}
+
+// Neighbours returns the current Cyclon's cache.
+func (c *Cyclon) Neighbours() []topo.Peer {
+	c.neighbsmu.RLock()
+	neighbs := make([]topo.Peer, 0, len(c.neighbs))
+	for _, n := range c.neighbsmu {
+		neighbs = append(neighbs, n)
+	}
+	c.neighbsmu.RUnlock()
+	return neighbs
 }
 
 // Shuffle initiates a random exchange of peer profiles with a neighbour of
@@ -204,7 +216,7 @@ func (c Cyclon) updateCache(new, old []topo.Peer) {
 	// Send the new peers out without blocking
 	if c.outBuf != nil {
 		for _, p := range new {
-			p.Put(birth, c.serviceAge-int64(p.Get(age).(int)))
+			p.Put(bday, c.serviceAge-int64(p.Get(age).(int)))
 			c.outBuf <- p
 		}
 	}
