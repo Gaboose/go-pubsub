@@ -179,7 +179,7 @@ func TestIncreaseAge(t *testing.T) {
 	}
 }
 
-func TestBirth(t *testing.T) {
+func TestBday(t *testing.T) {
 	sw := mock.ProtNetSwarm{}
 	c0 := New(&mock.Peer{ID: "p0"}, 3, 2, sw.DialListener("p0"))
 	c1 := New(&mock.Peer{ID: "p1"}, 3, 2, sw.DialListener("p1"))
@@ -207,7 +207,7 @@ func TestBirth(t *testing.T) {
 	set := make(map[interface{}]int64)
 	for i := 0; i < 3; i++ {
 		p := <-c1.Out()
-		set[p.Id()] = p.Get(birth).(int64)
+		set[p.Id()] = p.Get(bday).(int64)
 	}
 
 	diff := set["p3"] - set["p2"]
