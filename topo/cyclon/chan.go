@@ -1,6 +1,6 @@
 package cyclon
 
-import "github.com/Gaboose/go-pubsub-planet/topo"
+import "github.com/Gaboose/go-pubsub/topo"
 
 // overflowBuffer forms a last-in last-out queue between the given channels.
 // Input channel never blocks from outside. If the buffer is full,

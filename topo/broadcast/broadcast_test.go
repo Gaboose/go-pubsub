@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Gaboose/go-pubsub-planet/topo"
-	"github.com/Gaboose/go-pubsub-planet/topo/mock"
+	"github.com/Gaboose/go-pubsub/topo"
+	"github.com/Gaboose/go-pubsub/topo/mock"
 )
 
 const timeToWait = time.Millisecond

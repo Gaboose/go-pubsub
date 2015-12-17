@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gaboose/go-pubsub-planet/topo"
+	"github.com/Gaboose/go-pubsub/topo"
 )
 
 // Names of topo.Peer parameters

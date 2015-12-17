@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Gaboose/go-pubsub-planet/topo"
+	"github.com/Gaboose/go-pubsub/topo"
 )
 
 // Name of a parameter

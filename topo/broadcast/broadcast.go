@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gaboose/go-pubsub-planet/topo"
+	"github.com/Gaboose/go-pubsub/topo"
 	mux "github.com/jbenet/go-multicodec/mux"
 )
 

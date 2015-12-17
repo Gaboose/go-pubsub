@@ -3,7 +3,7 @@ package mock
 import (
 	"errors"
 	"fmt"
-	"github.com/Gaboose/go-pubsub-planet/topo"
+	"github.com/Gaboose/go-pubsub/topo"
 	"io"
 	"net"
 )
