@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	smux "github.com/jbenet/go-stream-muxer"
-	ss "github.com/docker/spdystream"
+	ss "github.com/jbenet/go-stream-muxer/Godeps/_workspace/src/github.com/docker/spdystream"
 )
 
 var ErrUseServe = errors.New("not implemented, use Serve")
