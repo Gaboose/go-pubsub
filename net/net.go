@@ -1,65 +1,78 @@
 package net
 
 import (
-	"net"
+	"encoding/gob"
+	"fmt"
+	"strings"
+	"time"
 
-	"github.com/ipfs/go-ipfs/thirdparty/multierr"
-	ma "github.com/jbenet/go-multiaddr"
-	manet "github.com/jbenet/go-multiaddr-net"
-	ps "github.com/jbenet/go-peerstream"
-	psy "github.com/jbenet/go-stream-muxer/yamux"
-	"github.com/Gaboose/go-pubsub/peer"
+	"github.com/Gaboose/go-pubsub/gway"
+	"github.com/Gaboose/go-pubsub/topo/broadcast"
+	"github.com/Gaboose/go-pubsub/topo/cyclon"
+
+	ps "github.com/briantigerchow/pubsub"
 )
 
 type Network struct {
-	swarm *ps.Swarm
-	local peer.ID
-	peers peer.Peerstore
+	gw  *gway.Gateway
+	cyc *cyclon.Cyclon
+	bro *broadcast.Broadcast
+	rtr *ps.PubSub
 }
 
-func NewNetwork(listenAddrs []ma.Multiaddr, local peer.ID,
-	peers peer.Peerstore) (*Network, error) {
-
-	n := &Network{
-		swarm: ps.NewSwarm(psy.DefaultTransport),
-		local: local,
-		peers: peers,
+func NewNetwork(me *gway.PeerInfo) (*Network, error) {
+	gw := gway.NewGateway()
+	err := gw.ListenAll(me.MAddrs)
+	if err != nil {
+		return nil, err
 	}
 
-	return n, n.listenMulti(listenAddrs)
+	gob.Register(&gway.PeerInfo{})
+
+	c := cyclon.New(me, 30, 10, gw.NewProtoNet("/cyclon"))
+	c.Start(time.Second)
+
+	b := broadcast.New(2, time.Minute, gw.NewProtoNet("/broadcast"))
+	b.Start(c.Out(), 30)
+
+	r := ps.New(1)
+	go route(b.Out(), r)
+
+	return &Network{
+		gw:  gw,
+		cyc: c,
+		bro: b,
+		rtr: r,
+	}, nil
 }
 
-func (n *Network) listenMulti(addrs []ma.Multiaddr) error {
-	retErr := multierr.New()
+func (n *Network) Connect(p *gway.PeerInfo) { n.cyc.Add(p) }
 
-	// listen on every address
-	for i, addr := range addrs {
-		err := n.listen(addr)
-		if err != nil {
-			if retErr.Errors == nil {
-				retErr.Errors = make([]error, len(addrs))
-			}
-			retErr.Errors[i] = err
+func (n *Network) Pub(msg string, topic string) {
+	n.bro.In() <- fmt.Sprintf("/%s/%s", topic, msg)
+}
+
+func (n *Network) Sub(topic string) (<-chan interface{}, chan<- bool) {
+	unsub := make(chan bool)
+	ch := n.rtr.Sub(topic)
+	go func() {
+		<-unsub
+		n.rtr.Unsub(ch)
+	}()
+	return ch, unsub
+}
+
+func route(in <-chan string, rtr *ps.PubSub) {
+	for {
+		msg := string(<-in)
+		if strings.Count(msg, "/") < 2 || msg[0] != '/' {
+			fmt.Println("Unspecified topic")
+			continue
 		}
-	}
+		s := strings.SplitN(msg[1:], "/", 2)
+		topic := s[0]
+		msg = s[1]
 
-	if retErr.Errors != nil {
-		return retErr
+		rtr.Pub(msg, topic)
 	}
-	return nil
-}
-
-func (n *Network) listen(addr ma.Multiaddr) error {
-	lnet, lnaddr, err := manet.DialArgs(addr)
-	if err != nil {
-		return err
-	}
-
-	l, err := net.Listen(lnet, lnaddr)
-	if err != nil {
-		return err
-	}
-
-	_, err = n.swarm.AddListener(l)
-	return err
 }

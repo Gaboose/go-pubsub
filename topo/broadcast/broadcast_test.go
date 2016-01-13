@@ -18,7 +18,7 @@ func TestNumGoroutine(t *testing.T) {
 	baseNum := numGoroutine()
 	var num int
 
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 	b := New(2, time.Minute, sw.DialListener("p0"))
 	b.Start(nil, 0)
 	b.Stop()
@@ -40,7 +40,7 @@ func TestNumGoroutine(t *testing.T) {
 }
 
 func TestMsg(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 	b0 := New(2, time.Minute, sw.DialListener("p0"))
 	b1 := New(2, time.Minute, sw.DialListener("p1"))
 
@@ -61,7 +61,7 @@ func TestMsg(t *testing.T) {
 }
 
 func TestMsgForward(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 
 	numNodes := 4
 	b, ch := make([]*Broadcast, numNodes), make([]chan topo.Peer, numNodes)
@@ -89,7 +89,7 @@ func TestMsgForward(t *testing.T) {
 }
 
 func TestNeighbourDiscard(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 
 	numNodes := 4
 	b, ch := make([]*Broadcast, numNodes), make([]chan topo.Peer, numNodes)
@@ -116,7 +116,7 @@ func TestNeighbourDiscard(t *testing.T) {
 }
 
 func TestNeighbourBackup(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 
 	numNodes := 4
 	b, ch := make([]*Broadcast, numNodes), make([]chan topo.Peer, numNodes)

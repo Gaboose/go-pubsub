@@ -29,7 +29,7 @@ func (mi msgInfo) String() string {
 
 type Broadcast struct {
 	fanout      int
-	protnet     topo.ProtNet
+	protonet    topo.ProtoNet
 	in          chan string
 	out         chan string
 	neighbCount chan int
@@ -47,11 +47,11 @@ func (b *Broadcast) String() string {
 	return b.Str
 }
 
-func New(fanout int, ttl time.Duration, protnet topo.ProtNet) *Broadcast {
+func New(fanout int, ttl time.Duration, protonet topo.ProtoNet) *Broadcast {
 	return &Broadcast{
 		cache:       NewExpiringSet(ttl),
 		fanout:      fanout,
-		protnet:     protnet,
+		protonet:    protonet,
 		neighbCount: make(chan int, 1),
 		neighbsPri:  map[io.ReadWriteCloser]Peer{},
 		neighbsSec:  map[io.ReadWriteCloser]bool{},
@@ -77,7 +77,7 @@ func (b *Broadcast) Start(peerSampler <-chan topo.Peer, backupSize int) {
 
 		// start helper goroutines
 
-		ln := b.protnet.Listen()
+		ln := b.protonet.Listen()
 		go b.connAccepter(ln, newSecNeighbs)
 		defer ln.Close()
 
@@ -112,7 +112,7 @@ func (b *Broadcast) Out() <-chan string         { return b.out }
 func (b *Broadcast) NeighbourCount() <-chan int { return b.neighbCount }
 
 func (b *Broadcast) connect(p Peer, msgCh chan<- msgInfo, closedCh chan<- io.ReadWriteCloser) error {
-	conn, err := b.protnet.Dial(p.Peer)
+	conn, err := b.protonet.Dial(p.Peer)
 	if err == nil {
 		p.conn = conn
 		b.neighbsPri[conn] = p

@@ -16,7 +16,7 @@ func TestNumGoroutine(t *testing.T) {
 	baseNum := numGoroutine()
 	var num int
 
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 	p := &mock.Peer{ID: "peer0"}
 	c := New(p, 20, 10, sw.DialListener(p))
 	c.Start(time.Second)
@@ -39,7 +39,7 @@ func TestNumGoroutine(t *testing.T) {
 }
 
 func TestNoAnswer(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 	p := &mock.Peer{ID: "peer0"}
 	c := New(p, 20, 10, sw.DialListener(p))
 
@@ -53,7 +53,7 @@ func TestNoAnswer(t *testing.T) {
 }
 
 func TestAgeSelect(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 	p := &mock.Peer{ID: "peer0"}
 	c := New(p, 20, 10, sw.DialListener(p))
 
@@ -76,7 +76,7 @@ func TestAgeSelect(t *testing.T) {
 }
 
 func TestReverseEdge(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 	p0 := &mock.Peer{ID: "peer0"}
 	p1 := &mock.Peer{ID: "peer1"}
 	c0 := New(p0, 20, 10, sw.DialListener(p0.Id()))
@@ -99,7 +99,7 @@ func TestReverseEdge(t *testing.T) {
 }
 
 func TestConservation(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 	p0 := &mock.Peer{ID: "p0"}
 	p1 := &mock.Peer{ID: "p1"}
 	c0 := New(p0, 5, 3, sw.DialListener(p0.Id()))
@@ -143,7 +143,7 @@ func TestConservation(t *testing.T) {
 }
 
 func TestIncreaseAge(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 	p0 := &mock.Peer{ID: "p0"}
 	p1 := &mock.Peer{ID: "p1"}
 	c0 := New(p0, 3, 2, sw.DialListener(p0.Id()))
@@ -180,7 +180,7 @@ func TestIncreaseAge(t *testing.T) {
 }
 
 func TestBday(t *testing.T) {
-	sw := mock.ProtNetSwarm{}
+	sw := mock.ProtoNetSwarm{}
 	c0 := New(&mock.Peer{ID: "p0"}, 3, 2, sw.DialListener("p0"))
 	c1 := New(&mock.Peer{ID: "p1"}, 3, 2, sw.DialListener("p1"))
 

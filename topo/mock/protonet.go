@@ -8,18 +8,18 @@ import (
 	"net"
 )
 
-type ProtNetSwarm map[interface{}]*listener
+type ProtoNetSwarm map[interface{}]*listener
 
-func (sw ProtNetSwarm) DialListener(peerid interface{}) *ProtNet {
-	return &ProtNet{sw, peerid}
+func (sw ProtoNetSwarm) DialListener(peerid interface{}) *ProtoNet {
+	return &ProtoNet{sw, peerid}
 }
 
-type ProtNet struct {
-	sw ProtNetSwarm
+type ProtoNet struct {
+	sw ProtoNetSwarm
 	id interface{}
 }
 
-func (pn *ProtNet) Dial(p topo.Peer) (io.ReadWriteCloser, error) {
+func (pn *ProtoNet) Dial(p topo.Peer) (io.ReadWriteCloser, error) {
 	ln, ok := pn.sw[p.Id()]
 	if !ok {
 		msg := fmt.Sprintf("%s isn't listening", p.Id())
@@ -30,7 +30,7 @@ func (pn *ProtNet) Dial(p topo.Peer) (io.ReadWriteCloser, error) {
 	return conn2, nil
 }
 
-func (pn *ProtNet) Listen() topo.Listener {
+func (pn *ProtoNet) Listen() topo.Listener {
 	accept := make(chan io.ReadWriteCloser)
 	closeFn := func() error {
 		close(accept)

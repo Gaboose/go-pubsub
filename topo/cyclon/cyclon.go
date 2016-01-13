@@ -27,21 +27,21 @@ type Cyclon struct {
 	shuflen    int
 	neighbs    PeerSet // our "neighbour set" or "cache"
 	neighbsmu  sync.RWMutex
-	protnet    topo.ProtNet
+	protonet   topo.ProtoNet
 	serviceAge int64
 	out        chan topo.Peer
 	outBuf     chan topo.Peer
 	stop       chan bool
 }
 
-func New(me topo.Peer, cachesize, shuflen int, protnet topo.ProtNet) *Cyclon {
+func New(me topo.Peer, cachesize, shuflen int, protonet topo.ProtoNet) *Cyclon {
 	me.Put(age, 0)
 	return &Cyclon{
 		me:        me,
 		cachesize: cachesize,
 		shuflen:   shuflen,
 		neighbs:   make(PeerSet),
-		protnet:   protnet,
+		protonet:  protonet,
 	}
 }
 
@@ -141,7 +141,7 @@ func (c *Cyclon) Shuffle() {
 	// Calling another cyclon over the network can take a while
 	// so we keep our cache unlocked while doing this.
 	var answer []topo.Peer
-	conn, err := c.protnet.Dial(q)
+	conn, err := c.protonet.Dial(q)
 	if err == nil {
 		cl := rpc.NewClient(conn)
 		cl.Call("CyclonRPC.HandleShuffle", append(offer, c.me), &answer)
@@ -166,9 +166,9 @@ func (r CyclonRPC) HandleShuffle(offer []topo.Peer, answer *[]topo.Peer) error {
 
 func (r CyclonRPC) serve() chan bool {
 
-	// Serve protnet connections, so that this server is only available
+	// Serve protonet connections, so that this server is only available
 	// to dialers running the Cyclon protocol.
-	ln := r.c.protnet.Listen()
+	ln := r.c.protonet.Listen()
 
 	stop := make(chan bool)
 	go func() {
