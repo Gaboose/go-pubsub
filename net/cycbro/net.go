@@ -9,6 +9,7 @@ import (
 	"github.com/Gaboose/go-pubsub/pnet/gway"
 	"github.com/Gaboose/go-pubsub/topo/broadcast"
 	"github.com/Gaboose/go-pubsub/topo/cyclon"
+    "github.com/Gaboose/go-pubsub/svice/ping"
 
 	ps "github.com/briantigerchow/pubsub"
 )
@@ -28,6 +29,8 @@ func NewNetwork(me *gway.PeerInfo) (*Network, error) {
 	}
 
 	gob.Register(&gway.PeerInfo{})
+    
+    (&ping.Ping{ProtoNet: gw.NewProtoNet("/ping")}).Serve()
 
 	c := cyclon.New(me, 30, 10, gw.NewProtoNet("/cyclon"))
 	c.Start(time.Second)

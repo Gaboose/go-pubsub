@@ -4,6 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"time"
+	"github.com/Gaboose/go-pubsub/pnet/gway"
+	"github.com/Gaboose/go-pubsub/svice/ping"
+	maddr "github.com/Gaboose/go-multiaddr"
 )
 
 func init() {
@@ -63,6 +67,42 @@ FLAGS:
 			fmt.Fprintln(stdio, "Hello Status")
 			fmt.Fprintf(stdio, "daemon: %v\n", daemon)
 			return 0
+		},
+	},
+		
+	"ping": &LocalCommand{
+		help: "Usage: pubsub ping <maddr> - Try to contact a remote ping service",
+		Run: func(args []string, stdio io.ReadWriter) byte {
+			m, err := maddr.NewMultiaddr(args[0])
+			if err != nil {
+				fmt.Fprintln(stdio, err)
+				return 1
+			}
+			
+			gw := gway.NewGateway()
+			png := ping.Ping{ProtoNet: gw.NewProtoNet("/ping")}
+			p := &gway.PeerInfo{MAddrs: [][]byte{m.Bytes()}}
+			
+			stop := make(chan bool)
+			done := make(chan error)
+			
+			go func() {
+				done <- png.Ping(p, stop)
+			}()
+			
+			select {
+			case err = <-done:
+				if err != nil {
+					fmt.Fprintln(stdio, err)
+					return 1
+				}
+				fmt.Fprintln(stdio, "successful contact")
+				return 0
+			case <-time.After(5*time.Second):
+				close(stop)
+				fmt.Fprintln(stdio, "timed out")
+				return 1
+			}
 		},
 	},
 

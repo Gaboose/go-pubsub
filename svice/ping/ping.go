@@ -57,13 +57,15 @@ func (p *Ping) Serve() {
 
 	ln := p.ProtoNet.Listen()
 	go func() {
-		c, err := ln.Accept()
-		if err != nil {
-			return
-		}
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
 
-		c.Write([]byte(msg))
-		c.Close()
+			c.Write([]byte(msg))
+			c.Close()
+		}
 	}()
 
 	p.ln = ln

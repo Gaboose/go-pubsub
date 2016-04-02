@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/Gaboose/go-pubsub/pnet/gway"
-	psnet "github.com/Gaboose/go-pubsub/net"
+	psnet "github.com/Gaboose/go-pubsub/net/cycbro"
 
 	ma "github.com/jbenet/go-multiaddr"
 	manet "github.com/jbenet/go-multiaddr-net"
