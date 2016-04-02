@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Gaboose/go-pubsub/topo"
-	"github.com/Gaboose/go-pubsub/topo/mock"
+	"github.com/Gaboose/go-pubsub/pnet"
+	"github.com/Gaboose/go-pubsub/pnet/mock"
 )
 
 const timeToWait = time.Millisecond
@@ -44,7 +44,7 @@ func TestMsg(t *testing.T) {
 	b0 := New(2, time.Minute, sw.DialListener("p0"))
 	b1 := New(2, time.Minute, sw.DialListener("p1"))
 
-	ps0, ps1 := make(chan topo.Peer), make(chan topo.Peer)
+	ps0, ps1 := make(chan pnet.Peer), make(chan pnet.Peer)
 	b0.Start(ps0, 0)
 	b1.Start(ps1, 0)
 	ps0 <- &mock.Peer{ID: "p1"}
@@ -64,13 +64,13 @@ func TestMsgForward(t *testing.T) {
 	sw := mock.ProtoNetSwarm{}
 
 	numNodes := 4
-	b, ch := make([]*Broadcast, numNodes), make([]chan topo.Peer, numNodes)
+	b, ch := make([]*Broadcast, numNodes), make([]chan pnet.Peer, numNodes)
 
 	for i, _ := range b {
 		name := fmt.Sprintf("p%d", i)
 		b[i] = New(1, time.Minute, sw.DialListener(name))
 		b[i].Str = name
-		ch[i] = make(chan topo.Peer)
+		ch[i] = make(chan pnet.Peer)
 		b[i].Start(ch[i], 2)
 		defer b[i].Stop()
 	}
@@ -92,13 +92,13 @@ func TestNeighbourDiscard(t *testing.T) {
 	sw := mock.ProtoNetSwarm{}
 
 	numNodes := 4
-	b, ch := make([]*Broadcast, numNodes), make([]chan topo.Peer, numNodes)
+	b, ch := make([]*Broadcast, numNodes), make([]chan pnet.Peer, numNodes)
 
 	for i, _ := range b {
 		name := fmt.Sprintf("p%d", i)
 		b[i] = New(1, time.Minute, sw.DialListener(name))
 		b[i].Str = name
-		ch[i] = make(chan topo.Peer)
+		ch[i] = make(chan pnet.Peer)
 		b[i].Start(ch[i], 2)
 		defer b[i].Stop()
 	}
@@ -119,13 +119,13 @@ func TestNeighbourBackup(t *testing.T) {
 	sw := mock.ProtoNetSwarm{}
 
 	numNodes := 4
-	b, ch := make([]*Broadcast, numNodes), make([]chan topo.Peer, numNodes)
+	b, ch := make([]*Broadcast, numNodes), make([]chan pnet.Peer, numNodes)
 
 	for i, _ := range b {
 		name := fmt.Sprintf("p%d", i)
 		b[i] = New(1, time.Minute, sw.DialListener(name))
 		b[i].Str = name
-		ch[i] = make(chan topo.Peer)
+		ch[i] = make(chan pnet.Peer)
 		b[i].Start(ch[i], 2)
 		defer b[i].Stop()
 	}

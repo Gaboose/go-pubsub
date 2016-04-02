@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Gaboose/go-pubsub/gway"
+	"github.com/Gaboose/go-pubsub/pnet/gway"
 	"github.com/Gaboose/go-pubsub/topo/broadcast"
 	"github.com/Gaboose/go-pubsub/topo/cyclon"
 

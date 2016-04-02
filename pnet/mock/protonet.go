@@ -3,7 +3,7 @@ package mock
 import (
 	"errors"
 	"fmt"
-	"github.com/Gaboose/go-pubsub/topo"
+	"github.com/Gaboose/go-pubsub/pnet"
 	"io"
 	"net"
 )
@@ -19,7 +19,7 @@ type ProtoNet struct {
 	id interface{}
 }
 
-func (pn *ProtoNet) Dial(p topo.Peer) (io.ReadWriteCloser, error) {
+func (pn *ProtoNet) Dial(p pnet.Peer) (io.ReadWriteCloser, error) {
 	ln, ok := pn.sw[p.Id()]
 	if !ok {
 		msg := fmt.Sprintf("%s isn't listening", p.Id())
@@ -30,7 +30,7 @@ func (pn *ProtoNet) Dial(p topo.Peer) (io.ReadWriteCloser, error) {
 	return conn2, nil
 }
 
-func (pn *ProtoNet) Listen() topo.Listener {
+func (pn *ProtoNet) Listen() pnet.Listener {
 	accept := make(chan io.ReadWriteCloser)
 	closeFn := func() error {
 		close(accept)

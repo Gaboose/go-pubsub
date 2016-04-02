@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/Gaboose/go-pubsub/gway"
+	"github.com/Gaboose/go-pubsub/pnet/gway"
 	"github.com/Gaboose/mdns"
 	ma "github.com/jbenet/go-multiaddr"
 	manet "github.com/jbenet/go-multiaddr-net"

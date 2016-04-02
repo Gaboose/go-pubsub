@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gaboose/go-pubsub/topo"
+	"github.com/Gaboose/go-pubsub/pnet"
 	mux "github.com/jbenet/go-multicodec/mux"
 )
 
@@ -29,7 +29,7 @@ func (mi msgInfo) String() string {
 
 type Broadcast struct {
 	fanout      int
-	protonet    topo.ProtoNet
+	protonet    pnet.ProtoNet
 	in          chan string
 	out         chan string
 	neighbCount chan int
@@ -47,7 +47,7 @@ func (b *Broadcast) String() string {
 	return b.Str
 }
 
-func New(fanout int, ttl time.Duration, protonet topo.ProtoNet) *Broadcast {
+func New(fanout int, ttl time.Duration, protonet pnet.ProtoNet) *Broadcast {
 	return &Broadcast{
 		cache:       NewExpiringSet(ttl),
 		fanout:      fanout,
@@ -58,7 +58,7 @@ func New(fanout int, ttl time.Duration, protonet topo.ProtoNet) *Broadcast {
 	}
 }
 
-func (b *Broadcast) Start(peerSampler <-chan topo.Peer, backupSize int) {
+func (b *Broadcast) Start(peerSampler <-chan pnet.Peer, backupSize int) {
 
 	if b.stop != nil {
 		panic(errors.New("Broadcast was already started"))
@@ -160,7 +160,7 @@ func (b *Broadcast) msgRouter(fromUser <-chan string,
 	}
 }
 
-func (b *Broadcast) neighbManager(backupSize int, peerSampler <-chan topo.Peer, newSecNeighbs <-chan io.ReadWriteCloser, fromNeighbs chan<- msgInfo) {
+func (b *Broadcast) neighbManager(backupSize int, peerSampler <-chan pnet.Peer, newSecNeighbs <-chan io.ReadWriteCloser, fromNeighbs chan<- msgInfo) {
 	connClosed := make(chan io.ReadWriteCloser)
 	backup := make(OverflowSlice, 0, backupSize)
 
@@ -261,7 +261,7 @@ func (b *Broadcast) neighbManager(backupSize int, peerSampler <-chan topo.Peer, 
 
 }
 
-func (b *Broadcast) connAccepter(ln topo.Listener, out chan<- io.ReadWriteCloser) {
+func (b *Broadcast) connAccepter(ln pnet.Listener, out chan<- io.ReadWriteCloser) {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {

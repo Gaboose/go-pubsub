@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/Gaboose/go-pubsub/topo"
+	"github.com/Gaboose/go-pubsub/pnet"
 	ma "github.com/jbenet/go-multiaddr"
 )
 
@@ -26,7 +26,7 @@ func TestRouter(t *testing.T) {
 	pn1bar := gw1.NewProtoNet("/bar")
 	defer pn1bar.Close()
 
-	acceptAndWrite := func(ln topo.Listener, bts []byte) {
+	acceptAndWrite := func(ln pnet.Listener, bts []byte) {
 		s, err := ln.Accept()
 		if err != nil {
 			t.Fatal(err)

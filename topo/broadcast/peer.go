@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/Gaboose/go-pubsub/topo"
+	"github.com/Gaboose/go-pubsub/pnet"
 )
 
 // Name of a parameter
@@ -12,7 +12,7 @@ const bday = "bday"
 
 // Package specific wrapper over the common Peer interface
 type Peer struct {
-	topo.Peer
+	pnet.Peer
 	conn io.ReadWriteCloser
 }
 

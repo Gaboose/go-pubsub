@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/Gaboose/go-pubsub/gway"
+	"github.com/Gaboose/go-pubsub/pnet/gway"
 	psnet "github.com/Gaboose/go-pubsub/net"
 
 	ma "github.com/jbenet/go-multiaddr"

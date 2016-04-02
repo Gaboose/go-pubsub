@@ -14,27 +14,27 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Gaboose/go-pubsub/topo"
+	"github.com/Gaboose/go-pubsub/pnet"
 )
 
-// Names of topo.Peer parameters
+// Names of pnet.Peer parameters
 const age = "age"
 const bday = "bday"
 
 type Cyclon struct {
-	me         topo.Peer
+	me         pnet.Peer
 	cachesize  int
 	shuflen    int
 	neighbs    PeerSet // our "neighbour set" or "cache"
 	neighbsmu  sync.RWMutex
-	protonet   topo.ProtoNet
+	protonet   pnet.ProtoNet
 	serviceAge int64
-	out        chan topo.Peer
-	outBuf     chan topo.Peer
+	out        chan pnet.Peer
+	outBuf     chan pnet.Peer
 	stop       chan bool
 }
 
-func New(me topo.Peer, cachesize, shuflen int, protonet topo.ProtoNet) *Cyclon {
+func New(me pnet.Peer, cachesize, shuflen int, protonet pnet.ProtoNet) *Cyclon {
 	me.Put(age, 0)
 	return &Cyclon{
 		me:        me,
@@ -61,7 +61,7 @@ func (c *Cyclon) Start(interval time.Duration) {
 	}
 
 	// Start output buffer
-	c.outBuf, c.out = make(chan topo.Peer), make(chan topo.Peer)
+	c.outBuf, c.out = make(chan pnet.Peer), make(chan pnet.Peer)
 	go overflowBuffer(c.cachesize, c.outBuf, c.out)
 
 	go func() {
@@ -98,7 +98,7 @@ func (c *Cyclon) tick(interval time.Duration) chan bool {
 }
 
 // Add adds peers to the cache. You'll need to call this to jumpstart Cyclon.
-func (c *Cyclon) Add(peers ...topo.Peer) {
+func (c *Cyclon) Add(peers ...pnet.Peer) {
 	// TODO: Use random walks instead of shuffling to jumpstart,
 	// like the paper specifies.
 	c.neighbsmu.Lock()
@@ -111,7 +111,7 @@ func (c *Cyclon) Add(peers ...topo.Peer) {
 
 // Out channel constantly sends new peers from the Cyclon network
 // as they're discovered.
-func (c *Cyclon) Out() <-chan topo.Peer {
+func (c *Cyclon) Out() <-chan pnet.Peer {
 	return c.out
 }
 
@@ -140,7 +140,7 @@ func (c *Cyclon) Shuffle() {
 
 	// Calling another cyclon over the network can take a while
 	// so we keep our cache unlocked while doing this.
-	var answer []topo.Peer
+	var answer []pnet.Peer
 	conn, err := c.protonet.Dial(q)
 	if err == nil {
 		cl := rpc.NewClient(conn)
@@ -155,7 +155,7 @@ func (c *Cyclon) Shuffle() {
 
 type CyclonRPC struct{ c *Cyclon }
 
-func (r CyclonRPC) HandleShuffle(offer []topo.Peer, answer *[]topo.Peer) error {
+func (r CyclonRPC) HandleShuffle(offer []pnet.Peer, answer *[]pnet.Peer) error {
 	c := r.c
 	c.neighbsmu.Lock()
 	*answer = c.neighbs.Sample(c.shuflen)
@@ -192,7 +192,7 @@ func (r CyclonRPC) serve() chan bool {
 	return stop
 }
 
-func (c Cyclon) updateCache(new, old []topo.Peer) {
+func (c Cyclon) updateCache(new, old []pnet.Peer) {
 	// Filter out entries that are already in the cache or equal to c.me
 	for i := 0; i < len(new); i++ {
 		if _, has := c.neighbs[new[i].Id()]; has || c.me.Id() == new[i].Id() {

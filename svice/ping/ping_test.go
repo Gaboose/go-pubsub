@@ -4,14 +4,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Gaboose/go-pubsub/topo/mock"
+	"github.com/Gaboose/go-pubsub/pnet/mock"
 )
 
 func TestSucceed(t *testing.T) {
 	sw := mock.ProtoNetSwarm{}
 
-	ping0 := &Ping{protonet: sw.DialListener("peer0")} // pinger
-	ping1 := &Ping{protonet: sw.DialListener("peer1")} // ponger
+	ping0 := &Ping{ProtoNet: sw.DialListener("peer0")} // pinger
+	ping1 := &Ping{ProtoNet: sw.DialListener("peer1")} // ponger
 	ping1.Serve()
 	defer ping1.Stop()
 
@@ -30,7 +30,7 @@ func TestTimeout(t *testing.T) {
 	defer ln.Close()
 
 	// pinger
-	ping := &Ping{protonet: sw.DialListener("peer1")}
+	ping := &Ping{ProtoNet: sw.DialListener("peer1")}
 	done := make(chan error)
 	stop := make(chan bool)
 	go func() {
@@ -61,7 +61,7 @@ func TestDelayedResponse(t *testing.T) {
 	defer ln.Close()
 
 	// pinger
-	ping := &Ping{protonet: sw.DialListener("peer1")}
+	ping := &Ping{ProtoNet: sw.DialListener("peer1")}
 	done := make(chan error)
 	go func() {
 		done <- ping.Ping(&mock.Peer{ID: "peer0"}, nil)
@@ -85,7 +85,7 @@ func TestDelayedResponse(t *testing.T) {
 
 func TestFail(t *testing.T) {
 	sw := mock.ProtoNetSwarm{}
-	ping0 := &Ping{protonet: sw.DialListener("peer0")}
+	ping0 := &Ping{ProtoNet: sw.DialListener("peer0")}
 
 	err := ping0.Ping(&mock.Peer{ID: "peer1"}, nil)
 	if err == nil {

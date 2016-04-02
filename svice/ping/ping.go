@@ -3,7 +3,7 @@ package ping
 import (
 	"errors"
 
-	"github.com/Gaboose/go-pubsub/topo"
+	"github.com/Gaboose/go-pubsub/pnet"
 )
 
 const msg = "pong"
@@ -17,14 +17,14 @@ const msg = "pong"
 //
 // Now they can be timed out when we wait too long on the "pong" message.
 type Ping struct {
-	protonet topo.ProtoNet
-	ln       topo.Listener
+	ProtoNet pnet.ProtoNet
+	ln       pnet.Listener
 }
 
 // Ping returns nil if a predefined response is received,
 // otherwise returns an error.
-func (p *Ping) Ping(t topo.Peer, stop chan bool) error {
-	c, err := p.protonet.Dial(t)
+func (p *Ping) Ping(t pnet.Peer, stop chan bool) error {
+	c, err := p.ProtoNet.Dial(t)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (p *Ping) Serve() {
 		panic(errors.New("ping is already serving"))
 	}
 
-	ln := p.protonet.Listen()
+	ln := p.ProtoNet.Listen()
 	go func() {
 		c, err := ln.Accept()
 		if err != nil {

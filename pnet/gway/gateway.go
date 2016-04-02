@@ -6,7 +6,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/Gaboose/go-pubsub/topo"
+	"github.com/Gaboose/go-pubsub/pnet"
 	"github.com/ipfs/go-ipfs/thirdparty/multierr"
 	ma "github.com/jbenet/go-multiaddr"
 	manet "github.com/jbenet/go-multiaddr-net"
@@ -38,7 +38,7 @@ func NewGateway() *Gateway {
 	}
 }
 
-func (gw *Gateway) Dial(dest topo.Peer, proto string) (io.ReadWriteCloser, error) {
+func (gw *Gateway) Dial(dest pnet.Peer, proto string) (io.ReadWriteCloser, error) {
 	// See if we already have a connection with this peer.
 	s, err := gw.conns.NewStreamWithGroup(dest.Id())
 	if err != nil {
@@ -48,7 +48,7 @@ func (gw *Gateway) Dial(dest topo.Peer, proto string) (io.ReadWriteCloser, error
 		//https://github.com/ipfs/go-ipfs/blob/master/p2p/net/swarm/swarm_dial.go
 		p, ok := dest.(*PeerInfo)
 		if !ok {
-			return nil, errors.New("Unknown topo.Peer type")
+			return nil, errors.New("Unknown pnet.Peer type")
 		}
 
 		m, err := ma.NewMultiaddrBytes(p.MAddrs[0])

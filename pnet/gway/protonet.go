@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/Gaboose/go-pubsub/topo"
+	"github.com/Gaboose/go-pubsub/pnet"
 )
 
 type ProtoNet struct {
@@ -14,11 +14,11 @@ type ProtoNet struct {
 	gw       *Gateway
 }
 
-func (pn *ProtoNet) Dial(p topo.Peer) (io.ReadWriteCloser, error) {
+func (pn *ProtoNet) Dial(p pnet.Peer) (io.ReadWriteCloser, error) {
 	return pn.gw.Dial(p, pn.proto)
 }
 
-func (pn *ProtoNet) Listen() topo.Listener {
+func (pn *ProtoNet) Listen() pnet.Listener {
 	return &listener{
 		acceptCh: pn.acceptCh,
 		closeCh:  make(chan bool),

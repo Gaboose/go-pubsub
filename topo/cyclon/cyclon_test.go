@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Gaboose/go-pubsub/topo"
-	"github.com/Gaboose/go-pubsub/topo/mock"
+	"github.com/Gaboose/go-pubsub/pnet"
+	"github.com/Gaboose/go-pubsub/pnet/mock"
 )
 
 func TestNumGoroutine(t *testing.T) {
@@ -164,7 +164,7 @@ func TestIncreaseAge(t *testing.T) {
 	defer c0.Stop()
 	c1.Shuffle()
 
-	union := make(map[interface{}]topo.Peer)
+	union := make(map[interface{}]pnet.Peer)
 	for s, p := range c0.neighbs {
 		union[s] = p
 	}
