@@ -5,7 +5,7 @@ import (
 	"io"
 
 	ma "github.com/jbenet/go-multiaddr"
-	manet "github.com/jbenet/go-multiaddr-net"
+	manet "github.com/Gaboose/go-multiaddr-net"
 	mux "github.com/jbenet/go-multicodec/mux"
 )
 

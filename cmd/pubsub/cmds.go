@@ -7,7 +7,7 @@ import (
 	"time"
 	"github.com/Gaboose/go-pubsub/pnet/gway"
 	"github.com/Gaboose/go-pubsub/svice/ping"
-	maddr "github.com/Gaboose/go-multiaddr"
+	maddr "github.com/jbenet/go-multiaddr"
 )
 
 func init() {

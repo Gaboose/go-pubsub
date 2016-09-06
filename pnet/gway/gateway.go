@@ -4,12 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net"
 
 	"github.com/Gaboose/go-pubsub/pnet"
 	"github.com/ipfs/go-ipfs/thirdparty/multierr"
 	ma "github.com/jbenet/go-multiaddr"
-	manet "github.com/jbenet/go-multiaddr-net"
+	manet "github.com/Gaboose/go-multiaddr-net"
 	ps "github.com/jbenet/go-peerstream"
 	yamux "github.com/jbenet/go-stream-muxer/yamux"
 	ms "github.com/whyrusleeping/go-multistream"
@@ -134,12 +133,7 @@ func (gw *Gateway) NewProtoNet(proto string) *ProtoNet {
 }
 
 func (gw *Gateway) listen(addr ma.Multiaddr) error {
-	lnet, lnaddr, err := manet.DialArgs(addr)
-	if err != nil {
-		return err
-	}
-
-	l, err := net.Listen(lnet, lnaddr)
+	l, err := manet.NetListen(addr)
 	if err != nil {
 		return err
 	}
